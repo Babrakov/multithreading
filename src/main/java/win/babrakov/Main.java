@@ -9,15 +9,15 @@ public class Main {
             @Override
             public void run() {
                 System.out.println("Hello from the thread: " + Thread.currentThread().getName());
+                System.out.println("Priority is: " + Thread.currentThread().getPriority());
             }
         };
 
         thread.setName("New Worker Thread");
+        thread.setPriority(Thread.MAX_PRIORITY);
 
         System.out.println("Hello from the " + Thread.currentThread().getName() + " thread!");
         thread.start();
         System.out.println("Hello from the " + Thread.currentThread().getName() + " thread!");
-
-        Thread.sleep(10000);
     }
 }
