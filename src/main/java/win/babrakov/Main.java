@@ -8,16 +8,17 @@ public class Main {
         Thread thread = new Thread() {
             @Override
             public void run() {
-                System.out.println("Hello from the thread: " + Thread.currentThread().getName());
-                System.out.println("Priority is: " + Thread.currentThread().getPriority());
+                throw new RuntimeException("Something bad happened");
             }
         };
 
-        thread.setName("New Worker Thread");
-        thread.setPriority(Thread.MAX_PRIORITY);
-
-        System.out.println("Hello from the " + Thread.currentThread().getName() + " thread!");
+        thread.setName("Misbehaving Thread");
+        thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                System.out.println(t.getName() + " threw exception: " + e.getMessage());
+            }
+        });
         thread.start();
-        System.out.println("Hello from the " + Thread.currentThread().getName() + " thread!");
     }
 }
