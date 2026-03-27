@@ -1,19 +1,111 @@
 package win.babrakov;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 public class Main {
 
-    public static void main(String[] args) {
-        Thread thread = new MyThread();
+    public static final int MAX_PASSWORD = 9999;
 
-        thread.start();
+    public static void main(String[] args) {
+        Random random = new Random();
+        Vault vault = new Vault(random.nextInt(MAX_PASSWORD));
+
+        List<Thread> threads = new ArrayList<>();
+        threads.add(new AscendingThread(vault));
+        threads.add(new DescendingThread(vault));
+        threads.add(new PoliceThread());
+        for (Thread thread : threads) {
+            thread.start();
+        }
     }
 
-    private static class MyThread extends Thread {
+    private static class Vault {
+
+        private final int password;
+
+        public Vault(int password) {
+            this.password = password;
+        }
+
+        public boolean isCorrectPassword(int guess) {
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            return this.password == guess;
+        }
+    }
+
+    private static abstract class HackerThread extends Thread {
+
+        protected Vault vault;
+
+        public HackerThread(Vault vault) {
+            this.vault = vault;
+            this.setName(this.getClass().getSimpleName());
+            this.setPriority(MAX_PRIORITY);
+        }
+
+        @Override
+        public void start() {
+            System.out.println("Starting thread " + this.getName());
+            super.start();
+        }
+    }
+
+    private static class AscendingThread extends HackerThread {
+
+        public AscendingThread(Vault vault) {
+            super(vault);
+        }
+
         @Override
         public void run() {
-            System.out.println("Hello from thread: " + Thread.currentThread().getName());
+            for (int i = 0; i < MAX_PASSWORD; i++) {
+                if (vault.isCorrectPassword(i)) {
+                    System.out.println(this.getName() + " guessed the password " + i);
+                    System.exit(0);
+                }
+            }
+        }
+
+    }
+
+    private static class DescendingThread extends HackerThread {
+
+        public DescendingThread(Vault vault) {
+            super(vault);
+        }
+
+        @Override
+        public void run() {
+            for (int i = MAX_PASSWORD; i >= 0; i--) {
+                if (vault.isCorrectPassword(i)) {
+                    System.out.println(this.getName() + " guessed the password " + i);
+                    System.exit(0);
+                }
+            }
+        }
+
+    }
+
+    private static class PoliceThread extends Thread {
+
+        @Override
+        public void run() {
+            for (int i = 10; i > 0; i--) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println(i);
+            }
+            System.out.println("Game over for you hackers!");
+            System.exit(0);
         }
     }
 
